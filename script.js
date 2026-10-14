@@ -1,4 +1,4 @@
-        /*
+/*
         =====================================================
         QUIZ SETTINGS
         =====================================================
@@ -208,6 +208,43 @@ function showNext() {
         const GITHUB_BRANCH = "main";
         let visitorName = "";
 
+        // Names that can open the birthday surprise on the first visit.
+        const BIRTHDAY_NAMES = [
+            { name: "faiza", minimum: 4 },
+            { name: "antara", minimum: 4 },
+            { name: "orthi", minimum: 3 }
+        ];
+        const BIRTHDAY_CHECK_KEY = "quizBirthdayCheckDone";
+
+        // Ignore spaces, punctuation, and letter case before comparing.
+        function normalizeName(value) {
+            return value.toLowerCase().replace(/[^a-z]/g, "");
+        }
+
+        // Count the longest sequence of target letters that appears in order.
+        // The letters do not need to be beside each other.
+        function orderedMatchCount(enteredName, targetName) {
+            let enteredIndex = 0;
+            let matched = 0;
+
+            for (const letter of targetName) {
+                const foundAt = enteredName.indexOf(letter, enteredIndex);
+                if (foundAt !== -1) {
+                    matched++;
+                    enteredIndex = foundAt + 1;
+                }
+            }
+
+            return matched;
+        }
+
+        function matchesBirthdayName(enteredName) {
+            const normalized = normalizeName(enteredName);
+            return BIRTHDAY_NAMES.some(target =>
+                orderedMatchCount(normalized, target.name) >= target.minimum
+            );
+        }
+
         function encodeBase64Utf8(value) {
             const bytes = new TextEncoder().encode(value);
             let binary = "";
@@ -303,6 +340,16 @@ function showNext() {
             try {
                 await saveVisitorName(name);
                 document.getElementById("registerSection").style.display = "none";
+
+                // Only the first successful name submission can trigger the card.
+                const alreadyChecked = localStorage.getItem(BIRTHDAY_CHECK_KEY) === "true";
+                if (!alreadyChecked && matchesBirthdayName(name)) {
+                    localStorage.setItem(BIRTHDAY_CHECK_KEY, "true");
+                    document.getElementById("birthdaySection").style.display = "flex";
+                    return;
+                }
+
+                localStorage.setItem(BIRTHDAY_CHECK_KEY, "true");
                 document.getElementById("title").style.display = "block";
                 document.getElementById("q1").classList.add("active");
                 startTime = Date.now();
