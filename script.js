@@ -202,7 +202,7 @@ function showNext() {
         // GitHub repository settings. Create a fine-grained token with
         // Contents: Read and write, restricted to tetumeruday002/quiz.
         // IMPORTANT: A token placed in browser JavaScript is visible to visitors.
-        const GITHUB_TOKEN = "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";
+        const GITHUB_TOKEN = "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";
         const GITHUB_OWNER = "tetumeruday002";
         const GITHUB_REPO = "quiz";
         const GITHUB_BRANCH = "main";
