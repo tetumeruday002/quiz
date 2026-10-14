@@ -192,6 +192,49 @@
             text-decoration: underline;
         }
 
+        #birthdaySection {
+            display: none;
+            min-height: 100vh;
+            box-sizing: border-box;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            text-align: center;
+            background: radial-gradient(circle at top, #49324e 0%, #211c2b 55%, #17151d 100%);
+        }
+
+        #birthdayCard {
+            width: min(560px, 100%);
+            box-sizing: border-box;
+            padding: clamp(28px, 6vw, 54px);
+            border: 1px solid rgba(255, 220, 160, 0.45);
+            border-radius: 24px;
+            background: rgba(255, 250, 240, 0.97);
+            color: #30243a;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+        }
+
+        #birthdayCard .birthday-kicker {
+            color: #98633f;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        #birthdayCard h1 {
+            margin: 16px 0;
+            color: #5b315d;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: clamp(34px, 8vw, 52px);
+            line-height: 1.1;
+        }
+
+        #birthdayCard p {
+            font-size: 17px;
+            line-height: 1.8;
+        }
+
     </style>
     
 
@@ -947,6 +990,15 @@
 
         <pre id="resultData"></pre>
     </div>
+
+    <section id="birthdaySection" aria-label="Birthday surprise">
+        <div id="birthdayCard">
+            <div class="birthday-kicker">A little surprise for you</div>
+            <h1>Happy Birthday!</h1>
+            <p>I hope this new year of your life brings you peaceful days, beautiful moments, and plenty of reasons to smile.</p>
+            <p>Wishing you all the happiness you deserve.</p>
+        </div>
+    </section>
 
     <div id="registerSection" style="display:block;">
         <h2>Before we begin...</h2>
