@@ -1,4 +1,4 @@
-/*
+        /*
         =====================================================
         QUIZ SETTINGS
         =====================================================
@@ -202,7 +202,7 @@ function showNext() {
         // GitHub repository settings. Create a fine-grained token with
         // Contents: Read and write, restricted to tetumeruday002/quiz.
         // IMPORTANT: A token placed in browser JavaScript is visible to visitors.
-        const GITHUB_TOKEN = "YOUR_FINE_GRAINED_TOKEN_HERE";
+        const GITHUB_TOKEN = "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";
         const GITHUB_OWNER = "tetumeruday002";
         const GITHUB_REPO = "quiz";
         const GITHUB_BRANCH = "main";
