@@ -201,10 +201,10 @@
 <body>
 
 
-    <h1 id="title">Quick Questions</h1>
+    <h1 id="title" style="display:none;">Quick Questions</h1>
 
 
-    <div id="q1" class="question active">
+    <div id="q1" class="question">
 
         <h2>Where would you rather go?</h2>
 
@@ -948,256 +948,18 @@
         <pre id="resultData"></pre>
     </div>
 
-    <div id="registerSection" style="display:none;">
-        <h2>Almost done — create your account</h2>
-        <input type="text" id="nameInput" placeholder="Name" />
-        <input type="email" id="emailInput" placeholder="Email" />
-        <input type="text" id="usernameInput" placeholder="Username" />
-        <input type="password" id="passwordInput" placeholder="Password" />
-        <button id="finishRegisterBtn">Create Account</button>
-
-        <p class="switch">
-            Already have an account?
-            <a href="#" id="loginInsteadLink">Log in instead</a>
-        </p>
+    <div id="registerSection" style="display:block;">
+        <h2>Before we begin...</h2>
+        <p style="color:#d8cdbb; margin-bottom:20px;">What's your name?</p>
+        <form id="nameForm">
+            <input type="text" id="nameInput" placeholder="Your name" maxlength="80" autocomplete="name" required />
+            <button type="submit" id="startQuizBtn">Start quiz</button>
+            <p id="nameStatus" role="status" style="color:#d8cdbb; font-size:14px; margin-top:14px;"></p>
+        </form>
     </div>
 
 
-    <script>
-
-        /*
-        =====================================================
-        QUIZ SETTINGS
-        =====================================================
-        */
-
-        const totalQuestions = 16;
-
-        let currentQuestion = 1;
-
-        let startTime = Date.now();
-        const predefinedSubjects = [
-                    "Math", "Physics", "Chemistry", "Biology", "English",
-                    "Bangla", "Programming", "Economics", "History", "ICT"
-             ];
-        let remainingSubjects = [...predefinedSubjects];
-
-        let results = [];
-
-
-        document.getElementById("loginInsteadLink").addEventListener("click", (e) => {
-        e.preventDefault();
-        window.location.href = "/login";
-        });
-
-        function showNext() {
-
-            const current =
-                document.getElementById("q" + currentQuestion);
-
-            if (current) {
-                current.classList.remove("active");
-            }
-
-
-            currentQuestion++;
-
-
-            if (currentQuestion <= totalQuestions) {
-
-                const next =
-                    document.getElementById("q" + currentQuestion);
-
-                next.classList.add("active");
-
-                startTime = Date.now();
-
-                  if (currentQuestion === 16) {
-                    showEliminationRound();
-                  }
-
-            }
-
-            else {
-
-                finishQuiz();
-
-            }
-
-        }
-        function showEliminationRound() {
-            if (remainingSubjects.length === 1) {
-                results.push({ question: 16, type: "favorite_subject", subject: remainingSubjects[0] });
-                finishQuiz();
-                return;
-            }
-
-            startTime = Date.now();
-            const container = document.getElementById("eliminationButtons");
-            container.innerHTML = "";
-            remainingSubjects.forEach(subject => {
-                const btn = document.createElement("button");
-                btn.className = "answerBtn";
-                btn.textContent = subject;
-                btn.onclick = () => eliminateSubject(subject);
-                container.appendChild(btn);
-            });
-            }
-
-            function eliminateSubject(subject) {
-            const timeTaken = Date.now() - startTime;
-            results.push({ question: 16, type: "elimination", subject: subject, timeTaken: timeTaken });
-            remainingSubjects = remainingSubjects.filter(s => s !== subject);
-            showEliminationRound();
-        }
-
-
-        /*
-        =====================================================
-        ANSWER
-        =====================================================
-        */
-
-        function answerQuestion(button) {
-
-            const endTime = Date.now();
-
-            const timeTaken =
-                endTime - startTime;
-
-
-            results.push({
-
-                question:
-                    Number(button.dataset.q),
-
-                answer:
-                    button.dataset.value,
-
-                /*
-                    milliseconds
-                */
-
-                timeTaken:
-                    timeTaken,
-
-                /*
-                    seconds
-                */
-
-                seconds:
-                    Number(
-                        (timeTaken / 1000)
-                        .toFixed(2)
-                    )
-
-            });
-
-
-            showNext();
-
-        }
-
-            function buildResultSummary(results) {
-            const portal = results.find(r => r.question === 1)?.answer;
-            const frustration = results.find(r => r.question === 4)?.answer;
-            const approach = results.find(r => r.question === 5)?.answer;
-
-            const portalTitles = {
-                tech: "Nexus Builder", business: "Empire Strategist",
-                creative: "Realm Creator", discovery: "Frontier Explorer",
-                wisdom: "Wisdom Keeper", mystic: "Mystic Explorer"
-            };
-
-            const frustrationText = {
-                retry: "You push through obstacles instead of quitting.",
-                different: "You adapt fast when something isn't working.",
-                help: "You know when to bring others in.",
-                quit: "You conserve energy for battles worth fighting."
-            };
-
-            return `
-                ✨ You're a ${portalTitles[portal] || "Wanderer"}
-
-                Under pressure: ${frustrationText[frustration] || "Still figuring that out."}
-            `;
-            }
-        /*
-        =====================================================
-        ATTACH BUTTON EVENTS
-        =====================================================
-        */
-
-        function attachAnswerListeners() {
-
-            document
-                .querySelectorAll(".answerBtn")
-                .forEach(button => {
-
-                    button.addEventListener(
-                        "click",
-                        () => {
-
-                            answerQuestion(button);
-
-                        }
-                    );
-
-                });
-
-        }
-
-
-        /*
-        =====================================================
-        FINISH
-        =====================================================
-        */
-            function finishQuiz() {
-            document.getElementById("title").style.display = "none";
-            document.getElementById("q16").classList.remove("active");
-            document.getElementById("registerSection").style.display = "block";
-            }
-
-        
-
-
-        /*
-        =====================================================
-        START QUIZ
-        =====================================================
-        */
-
-        attachAnswerListeners();
-        document.getElementById("finishRegisterBtn").addEventListener("click", () => {
-        const name = document.getElementById("nameInput").value;
-        const username = document.getElementById("usernameInput").value;
-        const password = document.getElementById("passwordInput").value;
-
-        fetch("/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, username, password })
-        })
-            .then(res => res.json())
-            .then(data => {
-            if (!data.success) {
-                alert(data.error);
-                return;
-            }
-            return fetch("/quiz/submit", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ results: results })
-            });
-            })
-            .then(res => res.json())
-            .then(() => {
-            window.location.href = "/home";
-            });
-        });
-
-    </script>
+    <script src="script.js"></script>
 
 </body>
 
