@@ -1,8 +1,20 @@
-/*
-        =====================================================
-        QUIZ SETTINGS
-        =====================================================
-        */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBVR9gtqBYeASNMGsd7A1IApk_il2NOASo",
+    authDomain: "quiz-bec0c.firebaseapp.com",
+    projectId: "quiz-bec0c",
+    storageBucket: "quiz-bec0c.firebasestorage.app",
+    messagingSenderId: "592857186258",
+    appId: "1:592857186258:web:189fd5a6389a99475f920b",
+    measurementId: "G-QV9JEMFK61"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 
         const totalQuestions = 16;
 
@@ -202,66 +214,53 @@ function showNext() {
         // GitHub repository settings. Create a fine-grained token with
         // Contents: Read and write, restricted to tetumeruday002/quiz.
         // IMPORTANT: A token placed in browser JavaScript is visible to visitors.
-        const GITHUB_TOKEN = "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";
-        const GITHUB_OWNER = "tetumeruday002";
-        const GITHUB_REPO = "quiz";
-        const GITHUB_BRANCH = "main";
-        let visitorName = "";
 
-        // Names that can open the birthday surprise on the first visit.
-        const BIRTHDAY_NAMES = [
-            { name: "faiza", minimum: 4 },
-            { name: "antara", minimum: 4 },
-            { name: "orthi", minimum: 3 }
-        ];
-        const BIRTHDAY_CHECK_KEY = "quizBirthdayCheckDone";
+let visitorName = "";
 
-        // Ignore spaces, punctuation, and letter case before comparing.
-        function normalizeName(value) {
-            return value.toLowerCase().replace(/[^a-z]/g, "");
+const BIRTHDAY_NAMES = [
+    { name: "faiza", minimum: 4 },
+    { name: "antara", minimum: 4 },
+    { name: "orthi", minimum: 3 }
+];
+
+const BIRTHDAY_CHECK_KEY = "quizBirthdayCheckDone";
+
+function normalizeName(value) {
+    return value.toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function orderedMatchCount(enteredName, targetName) {
+    let enteredIndex = 0;
+    let matched = 0;
+
+    for (const letter of targetName) {
+        const foundAt = enteredName.indexOf(letter, enteredIndex);
+
+        if (foundAt !== -1) {
+            matched++;
+            enteredIndex = foundAt + 1;
         }
+    }
 
-        // Count the longest sequence of target letters that appears in order.
-        // The letters do not need to be beside each other.
-        function orderedMatchCount(enteredName, targetName) {
-            let enteredIndex = 0;
-            let matched = 0;
+    return matched;
+}
 
-            for (const letter of targetName) {
-                const foundAt = enteredName.indexOf(letter, enteredIndex);
-                if (foundAt !== -1) {
-                    matched++;
-                    enteredIndex = foundAt + 1;
-                }
-            }
+function matchesBirthdayName(enteredName) {
+    const normalized = normalizeName(enteredName);
 
-            return matched;
-        }
+    return BIRTHDAY_NAMES.some(target =>
+        orderedMatchCount(normalized, target.name) >= target.minimum
+    );
+}
 
-        function matchesBirthdayName(enteredName) {
-            const normalized = normalizeName(enteredName);
-            return BIRTHDAY_NAMES.some(target =>
-                orderedMatchCount(normalized, target.name) >= target.minimum
-            );
-        }
+async function saveVisitorName(name) {
+    const cleanName = name.replace(/[\r\n]+/g, " ").trim();
 
-        function encodeBase64Utf8(value) {
-            const bytes = new TextEncoder().encode(value);
-            let binary = "";
-            bytes.forEach(byte => binary += String.fromCharCode(byte));
-            return btoa(binary);
-        }
+    await addDoc(collection(db, "visitorNames"), {
+        name: cleanName
+    });
+}
 
-        function decodeBase64Utf8(value) {
-            const binary = atob(value.replace(/\s/g, ""));
-            const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
-            return new TextDecoder().decode(bytes);
-        }
-
-        async function saveVisitorName(name) {
-            if (!GITHUB_TOKEN || GITHUB_TOKEN === "YOUR_FINE_GRAINED_TOKEN_HERE") {
-                throw new Error("Add your GitHub token in script.js first.");
-            }
 
             const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/names.txt`;
             const headers = {
