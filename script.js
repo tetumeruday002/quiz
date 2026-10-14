@@ -261,60 +261,6 @@ async function saveVisitorName(name) {
     });
 }
 
-
-            const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/names.txt`;
-            const headers = {
-                "Accept": "application/vnd.github+json",
-                "Authorization": `Bearer ${GITHUB_TOKEN}`,
-                "X-GitHub-Api-Version": "2022-11-28",
-                "Content-Type": "application/json"
-            };
-
-            const getResponse = await fetch(url, { headers });
-            let existingText = "";
-            let sha;
-
-            if (getResponse.ok) {
-                const file = await getResponse.json();
-                existingText = decodeBase64Utf8(file.content || "");
-                sha = file.sha;
-            } else if (getResponse.status !== 404) {
-                let details = "";
-                try {
-                    const error = await getResponse.json();
-                    details = error.message || "";
-                } catch (_) {}
-                throw new Error(`GitHub couldn't read names.txt (${getResponse.status}) ${details}`.trim());
-            }
-
-            const cleanName = name.replace(/[\r\n]+/g, " ").trim();
-            const updatedText = existingText.trimEnd()
-                ? `${existingText.trimEnd()}\n${cleanName}\n`
-                : `${cleanName}\n`;
-
-            const payload = {
-                message: `Add quiz visitor: ${cleanName}`,
-                content: encodeBase64Utf8(updatedText),
-                branch: GITHUB_BRANCH
-            };
-            if (sha) payload.sha = sha;
-
-            const putResponse = await fetch(url, {
-                method: "PUT",
-                headers,
-                body: JSON.stringify(payload)
-            });
-
-            if (!putResponse.ok) {
-                let details = "";
-                try {
-                    const error = await putResponse.json();
-                    details = error.message || "";
-                } catch (_) {}
-                throw new Error(`GitHub couldn't save the name (${putResponse.status}) ${details}`.trim());
-            }
-        }
-
         attachAnswerListeners();
 
         // Start with name entry. The quiz appears only after the name is saved.
