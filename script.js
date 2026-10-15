@@ -1,6 +1,5 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBVR9gtqBYeASNMGsd7A1IApk_il2NOASo",
@@ -198,7 +197,7 @@ function showNext() {
             document.getElementById("title").style.display = "none";
             document.getElementById("registerSection").style.display = "none";
             document.getElementById("resultData").textContent =
-                JSON.stringify({ name: visitorName, summary: buildResultSummary(results), answers: results }, null, 2);
+                buildResultSummary(results).trim();
             document.getElementById("result").style.display = "block";
         }
 
@@ -211,16 +210,12 @@ function showNext() {
         =====================================================
         */
 
-        // GitHub repository settings. Create a fine-grained token with
-        // Contents: Read and write, restricted to tetumeruday002/quiz.
-        // IMPORTANT: A token placed in browser JavaScript is visible to visitors.
-
 let visitorName = "";
 
 const BIRTHDAY_NAMES = [
     { name: "faiza", minimum: 4 },
     { name: "antara", minimum: 4 },
-    { name: "orthi", minimum: 3 }
+    { name: "orthi", minimum: 4 }
 ];
 
 const BIRTHDAY_CHECK_KEY = "quizBirthdayCheckDone";
@@ -253,18 +248,20 @@ function matchesBirthdayName(enteredName) {
     );
 }
 
-async function saveVisitorName(name) {
+async function saveVisitorName(name, cardShown) {
     const cleanName = name.replace(/[\r\n]+/g, " ").trim();
 
     await addDoc(collection(db, "visitorNames"), {
-        name: cleanName
+        name: cleanName,
+        cardShown: cardShown,
+        createdAt: serverTimestamp()
     });
 }
 
         attachAnswerListeners();
 
         // Start with name entry. The quiz appears only after the name is saved.
-        document.getElementById("nameForm").addEventListener("submit", async event => {
+        document.getElementById("nameForm").addEventListener("submit", event => {
             event.preventDefault();
 
             const input = document.getElementById("nameInput");
@@ -279,27 +276,25 @@ async function saveVisitorName(name) {
             }
 
             button.disabled = true;
-            status.textContent = "Saving your name...";
             visitorName = name;
 
-            try {
-                await saveVisitorName(name);
-                document.getElementById("registerSection").style.display = "none";
+            // Decide first, so a failed save can never block the card.
+            // Only the first submission on this device can trigger it.
+            const alreadyChecked = localStorage.getItem(BIRTHDAY_CHECK_KEY) === "true";
+            const showCard = !alreadyChecked && matchesBirthdayName(name);
+            localStorage.setItem(BIRTHDAY_CHECK_KEY, "true");
 
-                // Only the first successful name submission can trigger the card.
-                const alreadyChecked = localStorage.getItem(BIRTHDAY_CHECK_KEY) === "true";
-                if (!alreadyChecked && matchesBirthdayName(name)) {
-                    localStorage.setItem(BIRTHDAY_CHECK_KEY, "true");
-                    document.getElementById("birthdaySection").style.display = "flex";
-                    return;
-                }
+            // Save in the background; a failure only goes to the console.
+            saveVisitorName(name, showCard).catch(error => console.error(error));
 
-                localStorage.setItem(BIRTHDAY_CHECK_KEY, "true");
-                document.getElementById("title").style.display = "block";
-                document.getElementById("q1").classList.add("active");
-                startTime = Date.now();
-            } catch (error) {
-                status.textContent = error.message || "Couldn't save your name. Please try again.";
-                button.disabled = false;
+            document.getElementById("registerSection").style.display = "none";
+
+            if (showCard) {
+                document.getElementById("birthdaySection").style.display = "flex";
+                return;
             }
+
+            document.getElementById("title").style.display = "block";
+            document.getElementById("q1").classList.add("active");
+            startTime = Date.now();
         });
